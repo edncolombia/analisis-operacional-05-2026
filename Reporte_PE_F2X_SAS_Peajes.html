@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Reporte Ejecutivo – F2X SAS – Peajes</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --dark:#0D3075;--mid:#14AAEE;--green:#5ACF3D;--red:#E53F39;
+  --purple:#9440E2;--yellow:#EDA711;--bg:#F4F6FA;--num:#8A96AE;
+  --shadow:0 2px 8px rgba(13,48,117,.10);
+}
+html,body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;}
+.wrap{max-width:960px;margin:0 auto;padding:0 16px 48px;}
+
+/* HEADER */
+.header{background:var(--dark);color:#fff;padding:24px 28px 20px;border-radius:0 0 16px 16px;margin-bottom:28px;position:relative;overflow:hidden;}
+.header::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(20,170,238,.08);}
+.header::after{content:'';position:absolute;bottom:-60px;right:60px;width:140px;height:140px;border-radius:50%;background:rgba(20,170,238,.05);}
+.hrow{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;position:relative;z-index:1;}
+.hlogo{font-size:13px;font-weight:700;letter-spacing:2px;color:var(--mid);margin-bottom:6px;}
+.htitle{font-size:22px;font-weight:700;color:#fff;line-height:1.2;}
+.hsub{font-size:13px;font-weight:400;color:rgba(255,255,255,.65);margin-top:3px;}
+.hdiv{border:none;border-top:1px solid rgba(255,255,255,.12);margin:14px 0 12px;position:relative;z-index:1;}
+.hmeta{display:flex;flex-wrap:wrap;gap:5px 22px;position:relative;z-index:1;}
+.hmi{font-size:11px;color:rgba(255,255,255,.5);}
+.hmi span{color:rgba(255,255,255,.9);font-weight:500;}
+
+/* NAV HINT */
+.nhint{text-align:center;font-size:11px;color:var(--num);margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:6px;}
+.nharrow{animation:abounce 1.4s infinite;display:inline-block;}
+@keyframes abounce{0%,100%{transform:translateX(0);}50%{transform:translateX(5px);}}
+
+/* TABS */
+.tabswrap{background:#fff;border-radius:12px;padding:6px;box-shadow:var(--shadow);margin-bottom:24px;display:flex;gap:4px;overflow-x:auto;}
+.tab{flex:1;min-width:120px;padding:10px 6px 8px;font-size:11px;font-weight:600;border-radius:8px;cursor:pointer;border:none;background:transparent;color:var(--num);font-family:'Poppins',sans-serif;transition:all .22s;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.3;}
+.tabicon{font-size:18px;}
+.tabdots{display:flex;gap:3px;margin-top:3px;}
+.tabdot{width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.3;transition:opacity .2s;}
+.tab:hover:not(.active){background:rgba(20,170,238,.09);color:var(--mid);}
+.tab.active{background:var(--mid);color:#fff;box-shadow:0 3px 10px rgba(20,170,238,.35);}
+.tab.active .tabdot{opacity:1;}
+.tab.active .tabdot:nth-child(2){opacity:.55;}
+.tab.active .tabdot:nth-child(3){opacity:.25;}
+
+/* PAGES */
+.page{display:none;}
+.page.active{display:block;animation:pfade .28s ease;}
+@keyframes pfade{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:translateY(0);}}
+
+/* PAGE NAV */
+.pnav{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.pinfo{font-size:11px;color:var(--num);}.pinfo strong{color:var(--dark);}
+.pbtns{display:flex;gap:8px;}
+.pbtn{background:#fff;border:1.5px solid rgba(20,170,238,.3);color:var(--mid);font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;padding:6px 14px;border-radius:8px;cursor:pointer;transition:all .2s;}
+.pbtn:hover{background:var(--mid);color:#fff;}
+.pbtn:disabled{opacity:.28;cursor:default;pointer-events:none;}
+
+/* SECTION HEADER */
+.sh{background:var(--mid);color:#fff;font-size:11px;font-weight:700;letter-spacing:.7px;padding:11px 16px;border-radius:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;text-transform:uppercase;}
+.shsub{font-size:9px;opacity:.75;font-weight:400;letter-spacing:0;text-transform:none;}
+
+/* KPI CARDS */
+.kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.kcard{background:#fff;border-radius:12px;padding:16px 14px 14px 0;display:flex;overflow:hidden;box-shadow:var(--shadow);transition:transform .18s;}
+.kcard:hover{transform:translateY(-2px);}
+.kbar{width:7px;border-radius:7px 0 0 7px;flex-shrink:0;margin-right:13px;}
+.klabel{font-size:9.5px;font-weight:600;color:var(--num);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+.kval{font-size:23px;font-weight:700;line-height:1.1;margin-bottom:3px;}
+.ksub{font-size:9.5px;color:var(--num);}
+
+/* TABLE */
+.twrap{border-radius:12px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:16px;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead tr{background:var(--mid);color:#fff;}
+thead th{padding:10px 12px;font-weight:600;text-align:left;font-size:10.5px;}
+thead th:not(:first-child){text-align:center;}
+tbody tr:nth-child(even){background:var(--bg);}
+tbody tr:nth-child(odd){background:#fff;}
+tbody tr:hover{background:rgba(20,170,238,.06);}
+tbody td{padding:8px 12px;}
+tbody td:not(:first-child){text-align:center;}
+tfoot tr{background:var(--dark);color:#fff;}
+tfoot td{padding:9px 12px;font-weight:700;font-size:11px;text-align:center;}
+tfoot td:first-child{text-align:left;}
+.vp{color:#1a9e45;font-weight:600;}
+.vn{color:var(--red);font-weight:600;}
+
+/* INSIGHT BOXES */
+.irow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+.ibox{background:#fff;border-radius:12px;padding:16px;box-shadow:var(--shadow);}
+.inum{font-size:28px;font-weight:700;color:var(--num);line-height:1;margin-bottom:6px;}
+.ititle{font-size:11px;font-weight:700;color:var(--dark);margin-bottom:5px;line-height:1.4;}
+.itext{font-size:10px;color:var(--num);line-height:1.6;}
+
+/* COMPARISON CARDS */
+.ccards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.ccard{background:#fff;border-radius:12px;padding:18px;box-shadow:var(--shadow);}
+.clabel{font-size:10px;font-weight:600;color:var(--num);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;}
+.crow{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px;}
+.cyear{font-size:9.5px;color:var(--num);margin-bottom:2px;}
+.cval{font-size:19px;font-weight:700;}
+.carr{font-size:22px;color:var(--num);align-self:center;}
+.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;}
+.bp{background:#e6f9e0;color:#1a9e45;}
+.bn{background:#fde8e8;color:var(--red);}
+
+/* CHART */
+.chartcard{background:#fff;border-radius:12px;padding:18px;box-shadow:var(--shadow);margin-bottom:16px;}
+.legend{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap;}
+.li{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--num);}
+.ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+
+/* STRATEGIC BOXES */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.sbox{background:var(--bg);border-radius:12px;padding:18px;display:flex;gap:12px;transition:transform .18s;}
+.sbox:hover{transform:translateY(-2px);}
+.sacc{width:5px;border-radius:5px;flex-shrink:0;}
+.scontent{flex:1;}
+.snum{font-size:11px;font-weight:700;margin-bottom:4px;}
+.stitle{font-size:12px;font-weight:700;color:var(--dark);margin-bottom:6px;line-height:1.4;}
+.stext{font-size:10.5px;color:#5a6478;line-height:1.6;}
+
+/* FOOTER */
+.footer{text-align:center;font-size:10px;color:var(--num);margin-top:32px;padding-top:16px;border-top:1px solid rgba(13,48,117,.08);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="hrow">
+      <div>
+        <div class="hlogo">● EDN COLOMBIA</div>
+        <div class="htitle">Reporte Ejecutivo</div>
+        <div class="hsub">Análisis Transaccional · Peajes</div>
+      </div>
+    </div>
+    <hr class="hdiv">
+    <div class="hmeta">
+      <div class="hmi">Cliente: <span>F2X SAS</span></div>
+      <div class="hmi">Servicio: <span>Peajes</span></div>
+      <div class="hmi">Período: <span>Ene 2025 – Abr 2026</span></div>
+      <div class="hmi">Preparado por: <span>EDN Ecosistemas Digitales</span></div>
+      <div class="hmi">Fecha: <span>Mayo 2026</span></div>
+    </div>
+  </div>
+
+  <!-- NAV HINT -->
+  <div class="nhint">
+    <span>Selecciona una pestaña para navegar entre las secciones del reporte</span>
+    <span class="nharrow">→</span>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabswrap" role="tablist" aria-label="Secciones del reporte">
+    <button class="tab active" role="tab" aria-selected="true"  id="tab0" onclick="goPage(0)">
+      <span class="tabicon">📊</span><span>KPIs &amp; Top 5</span>
+      <span class="tabdots"><span class="tabdot"></span><span class="tabdot"></span><span class="tabdot"></span></span>
+    </button>
+    <button class="tab" role="tab" aria-selected="false" id="tab1" onclick="goPage(1)">
+      <span class="tabicon">📅</span><span>Evolución Mensual</span>
+      <span class="tabdots"><span class="tabdot"></span><span class="tabdot"></span><span class="tabdot"></span></span>
+    </button>
+    <button class="tab" role="tab" aria-selected="false" id="tab2" onclick="goPage(2)">
+      <span class="tabicon">🔄</span><span>Comparativa &amp; Retención</span>
+      <span class="tabdots"><span class="tabdot"></span><span class="tabdot"></span><span class="tabdot"></span></span>
+    </button>
+    <button class="tab" role="tab" aria-selected="false" id="tab3" onclick="goPage(3)">
+      <span class="tabicon">💡</span><span>Insights Estratégicos</span>
+      <span class="tabdots"><span class="tabdot"></span><span class="tabdot"></span><span class="tabdot"></span></span>
+    </button>
+  </div>
+
+  <!-- ═══ PAGE 0: KPIs & TOP 5 ═══ -->
+  <div id="page0" class="page active" role="tabpanel">
+    <div class="pnav">
+      <div class="pinfo">Sección <strong>1 de 4</strong> — Indicadores Clave &amp; Top 5</div>
+      <div class="pbtns">
+        <button class="pbtn" disabled>← Anterior</button>
+        <button class="pbtn" onclick="goPage(1)">Siguiente →</button>
+      </div>
+    </div>
+
+    <div class="sh">Indicadores Clave de Rendimiento <span class="shsub">Ene 2025 – Abr 2026</span></div>
+    <div class="kgrid">
+      <div class="kcard"><div class="kbar" style="background:var(--mid)"></div><div><div class="klabel">Transacciones Totales</div><div class="kval" style="color:var(--mid)">82.3M</div><div class="ksub">Ene 2025 – Abr 2026</div></div></div>
+      <div class="kcard"><div class="kbar" style="background:var(--dark)"></div><div><div class="klabel">NITs Gestionados</div><div class="kval" style="color:var(--dark)">13</div><div class="ksub">Organizaciones únicas</div></div></div>
+      <div class="kcard"><div class="kbar" style="background:var(--green)"></div><div><div class="klabel">Mes Pico</div><div class="kval" style="color:var(--green)">Ene 2025</div><div class="ksub">6,020,718 transacciones</div></div></div>
+      <div class="kcard"><div class="kbar" style="background:var(--yellow)"></div><div><div class="klabel">Retención de NITs</div><div class="kval" style="color:var(--yellow)">92.3%</div><div class="ksub">12 de 13 NITs activos</div></div></div>
+      <div class="kcard"><div class="kbar" style="background:#E53F39"></div><div><div class="klabel">Variación Abr 25 → 26</div><div class="kval" style="color:#E53F39">-25.3%</div><div class="ksub">1.48M TX menos vs año anterior</div></div></div>
+      <div class="kcard"><div class="kbar" style="background:#1a9e45"></div><div><div class="klabel">Promedio Transaccional</div><div class="kval" style="color:#1a9e45">4.8M</div><div class="ksub">Promedio mensual 2026</div></div></div>
+    </div>
+
+    <div class="sh">Top 5 Organizaciones del Último Mes <span class="shsub">Abril 2026</span></div>
+    <div class="twrap">
+      <table>
+        <thead><tr><th>Puesto</th><th>Organización</th><th>TX Abr 2026</th><th>% Total</th></tr></thead>
+        <tbody><tr><td style="text-align:center">1</td><td>ACCESOS NORTE DE BOGOTA SAS</td><td>703,111</td><td>16.1%</td></tr><tr><td style="text-align:center">2</td><td>VIA 40 EXPRESS SAS</td><td>575,007</td><td>13.2%</td></tr><tr><td style="text-align:center">3</td><td>CONCESION TUNEL ABURRA ORIENTE SA</td><td>527,424</td><td>12.1%</td></tr><tr><td style="text-align:center">4</td><td>CONCESION SABANA DE OCCIDENTE SAS</td><td>477,877</td><td>11.0%</td></tr><tr><td style="text-align:center">5</td><td>CONCESION VIAL DE LOS LLANOS SAS</td><td>444,158</td><td>10.2%</td></tr></tbody>
+        <tfoot><tr><td>—</td><td>TOTAL MES</td><td>4,363,507</td><td>100%</td></tr></tfoot>
+      </table>
+    </div>
+
+    <div class="irow">
+      <div class="ibox"><div class="inum">01</div><div class="ititle">Enero 2025: mes pico con 6.02M TX</div><div class="itext">El mayor volumen fue Enero 2025 con 6,020,718 TX, seguido de Enero 2026 (5.87M) y Diciembre 2025 (5.85M), evidenciando un patrón estacional claro de mayor actividad en inicio y cierre de año.</div></div>
+      <div class="ibox"><div class="inum">02</div><div class="ititle">Operación estable entre 4.2M y 6.0M TX mensuales</div><div class="itext">La operación oscila entre 4.16M y 5.87M TX con variaciones moderadas. El portafolio refleja una cartera consolidada con contratos de largo plazo con concesionarios viales consolidados.</div></div>
+      <div class="ibox"><div class="inum">03</div><div class="ititle">Tendencia descendente en 2026: promedio 4.77M TX/mes</div><div class="itext">Los 4 meses de 2026 promedian 4.77M TX, un 9.3% por debajo del promedio 2025 (5.27M). Feb 2026 es el mes de menor TX con 4.16M, el mínimo del período completo.</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE 1: EVOLUCIÓN MENSUAL ═══ -->
+  <div id="page1" class="page" role="tabpanel">
+    <div class="pnav">
+      <div class="pinfo">Sección <strong>2 de 4</strong> — Evolución Mensual</div>
+      <div class="pbtns">
+        <button class="pbtn" onclick="goPage(0)">← Anterior</button>
+        <button class="pbtn" onclick="goPage(2)">Siguiente →</button>
+      </div>
+    </div>
+
+    <div class="sh">Transacciones por Período Mensual</div>
+    <div class="twrap" style="margin-bottom:20px;">
+      <table>
+        <thead><tr><th>Período</th><th>NITs Operando</th><th>TX Totales</th><th>Var. vs Ant.</th><th>% Total</th></tr></thead>
+        <tbody id="mtbody"></tbody>
+        <tfoot><tr><td>TOTAL</td><td>13</td><td>82,286,870</td><td>—</td><td>100%</td></tr></tfoot>
+      </table>
+    </div>
+
+    <div class="sh">Evolución General de Transacciones Mensuales</div>
+    <div class="chartcard">
+      <div class="legend">
+        <div class="li"><div class="ldot" style="background:var(--green)"></div>Mes Pico</div>
+        <div class="li"><div class="ldot" style="background:var(--mid)"></div>Menor TX</div>
+        <div class="li"><div class="ldot" style="background:var(--dark)"></div>TX Mensual</div>
+      </div>
+      <div style="position:relative;width:100%;height:300px;">
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE 2: COMPARATIVA & RETENCIÓN ═══ -->
+  <div id="page2" class="page" role="tabpanel">
+    <div class="pnav">
+      <div class="pinfo">Sección <strong>3 de 4</strong> — Comparativa &amp; Retención</div>
+      <div class="pbtns">
+        <button class="pbtn" onclick="goPage(1)">← Anterior</button>
+        <button class="pbtn" onclick="goPage(3)">Siguiente →</button>
+      </div>
+    </div>
+
+    <div class="sh">Comparativa Interanual <span class="shsub">Abril 2025 vs Abril 2026</span></div>
+    <div class="ccards">
+      <div class="ccard">
+        <div class="clabel">Organizaciones Activas</div>
+        <div class="crow">
+          <div><div class="cyear">Abril 2025</div><div class="cval" style="color:var(--mid)">13 NITs</div></div>
+          <div class="carr">→</div>
+          <div><div class="cyear">Abril 2026</div><div class="cval" style="color:var(--dark)">12 NITs</div></div>
+        </div>
+        <span class="badge bn">↓ 1 NIT</span>
+      </div>
+      <div class="ccard">
+        <div class="clabel">Transacciones Mensuales</div>
+        <div class="crow">
+          <div><div class="cyear">Abril 2025</div><div class="cval" style="color:var(--mid)">5.8M TX</div></div>
+          <div class="carr">→</div>
+          <div><div class="cyear">Abril 2026</div><div class="cval" style="color:#E53F39">4.4M TX</div></div>
+        </div>
+        <span class="badge bn">↓ 25.3% interanual</span>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div class="chartcard" style="margin-bottom:0;">
+        <div style="font-size:11px;font-weight:700;color:var(--dark);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;">Organizaciones Activas</div>
+        <div class="legend">
+          <div class="li"><div class="ldot" style="background:var(--mid)"></div>Abril 2025</div>
+          <div class="li"><div class="ldot" style="background:var(--dark)"></div>Abril 2026</div>
+        </div>
+        <div style="position:relative;width:100%;height:200px;">
+          <canvas id="compChartNits"></canvas>
+        </div>
+      </div>
+      <div class="chartcard" style="margin-bottom:0;">
+        <div style="font-size:11px;font-weight:700;color:var(--dark);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;">Transacciones Mensuales</div>
+        <div class="legend">
+          <div class="li"><div class="ldot" style="background:var(--mid)"></div>Abril 2025</div>
+          <div class="li"><div class="ldot" style="background:var(--dark)"></div>Abril 2026</div>
+        </div>
+        <div style="position:relative;width:100%;height:200px;">
+          <canvas id="compChartTx"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="sh">Retención y Movimiento de Organizaciones</div>
+    <div class="chartcard">
+      <div class="legend">
+        <div class="li"><div class="ldot" style="background:var(--mid)"></div>Nuevos</div>
+        <div class="li"><div class="ldot" style="background:var(--red)"></div>Salientes</div>
+        <div class="li"><div class="ldot" style="background:var(--green);border-radius:50%"></div>Activos (línea)</div>
+      </div>
+      <div style="position:relative;width:100%;height:260px;">
+        <canvas id="retChart"></canvas>
+      </div>
+    </div>
+
+    <div class="irow">
+      <div class="ibox"><div class="inum">04</div><div class="ititle">Pérdida de NIT en Junio 2025 sin recuperación posterior</div><div class="itext">A partir de Junio 2025 el portafolio cae de 13 a 12 NITs y se mantiene así durante 11 meses consecutivos. No se han incorporado nuevos clientes para compensar esa salida.</div></div>
+      <div class="ibox"><div class="inum">05</div><div class="ititle">Retención del 100% en los últimos 11 meses</div><div class="itext">Desde Junio 2025 hasta Abril 2026 el portafolio se mantiene en 12 NITs sin rotación adicional. Alta retención pero ausencia de crecimiento orgánico en el período reciente.</div></div>
+      <div class="ibox"><div class="inum">06</div><div class="ititle">Portafolio equilibrado: cliente top al 16.1%</div><div class="itext">ACCESOS NORTE DE BOGOTÁ representa el 16.1% del volumen de Abril 2026. Esta distribución equilibrada entre los 5 primeros clientes (62.6% del total) reduce el riesgo de concentración.</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE 3: INSIGHTS ESTRATÉGICOS ═══ -->
+  <div id="page3" class="page" role="tabpanel">
+    <div class="pnav">
+      <div class="pinfo">Sección <strong>4 de 4</strong> — Insights Estratégicos</div>
+      <div class="pbtns">
+        <button class="pbtn" onclick="goPage(2)">← Anterior</button>
+        <button class="pbtn" disabled>Siguiente →</button>
+      </div>
+    </div>
+    <div class="sh">Insights Clave y Análisis Estratégico</div>
+    <div class="sgrid"><div class="sbox"><div class="sacc" style="background:var(--red)"></div><div class="scontent"><div class="snum" style="color:var(--red)">01</div><div class="stitle">Desaceleración sostenida: promedio 2026 un 9.3% menor al 2025</div><div class="stext">El promedio mensual 2026 (4.77M TX) es inferior al de 2025 (5.27M). Esta brecha del 9.3% sostenida en los primeros 4 meses indica desaceleración que debe monitorearse para evitar consolidarse como patrón estructural en el resto del año.</div></div></div><div class="sbox"><div class="sacc" style="background:var(--yellow)"></div><div class="scontent"><div class="snum" style="color:var(--yellow)">02</div><div class="stitle">Pérdida de NIT en Junio 2025 sin reemplazo en 11 meses</div><div class="stext">La salida de un concesionario en Junio 2025 redujo el portafolio de 13 a 12 NITs. Sin nuevas incorporaciones en 11 meses, recuperar o reemplazar este cliente es la prioridad comercial más urgente del portafolio.</div></div></div><div class="sbox"><div class="sacc" style="background:var(--mid)"></div><div class="scontent"><div class="snum" style="color:var(--mid)">03</div><div class="stitle">Caída interanual del 25.3% — la mayor contracción del período</div><div class="stext">Abril 2026 registró 4.36M TX frente a 5.84M en Abril 2025. Esta caída del 25.3% es significativa y debe analizarse junto con la pérdida del NIT para determinar si hay causas adicionales más allá de la deserción de un cliente.</div></div></div><div class="sbox"><div class="sacc" style="background:var(--green)"></div><div class="scontent"><div class="snum" style="color:var(--green)">04</div><div class="stitle">Portafolio equilibrado: menor riesgo de concentración</div><div class="stext">Con el cliente top al 16.1% y los 5 primeros representando el 62.6%, F2X SAS tiene una distribución equilibrada que reduce el riesgo ante pérdida de un solo cliente. Esta diversificación es una fortaleza que debe mantenerse en la estrategia de expansión.</div></div></div><div class="sbox"><div class="sacc" style="background:var(--dark)"></div><div class="scontent"><div class="snum" style="color:var(--dark)">05</div><div class="stitle">Diciembre y Enero: estacionalidad positiva consistente</div><div class="stext">Dic 2025 (5.85M) y Ene 2026 (5.87M) son los dos meses pico consecutivos. Este patrón de mayor actividad en cierre e inicio de año debe aprovecharse con capacidad operativa adicional y campañas de retención en esos períodos clave.</div></div></div><div class="sbox"><div class="sacc" style="background:var(--purple)"></div><div class="scontent"><div class="snum" style="color:var(--purple)">06</div><div class="stitle">Oportunidad: recuperar el NIT perdido y explorar nuevas concesiones</div><div class="stext">Reactivar el concesionario perdido en Junio 2025 y prospectar nuevas concesiones de 4G/5G disponibles son las dos acciones de mayor impacto potencial para recuperar el volumen previo a la caída y superar los 6M TX mensuales.</div></div></div></div>
+  </div>
+
+  <div class="footer">Reporte ejecutivo · Análisis Transaccional · 2025–2026 · Preparado por EDN Ecosistemas Digitales · Mayo 2026</div>
+</div>
+
+<script>
+/* ── DATA ── */
+const MONTHS = ['Ene 2025','Feb 2025','Mar 2025','Abr 2025','May 2025','Jun 2025','Jul 2025','Ago 2025','Sep 2025','Oct 2025','Nov 2025','Dic 2025','Ene 2026','Feb 2026','Mar 2026','Abr 2026'];
+const TX    = [6020718, 4868777, 5530782, 5844948, 5377565, 5053886, 4971296, 5064141, 4518398, 5153078, 4933364, 5851935, 5867895, 4159039, 4707541, 4363507];
+const NITS  = [13, 13, 13, 13, 13, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12];
+const VAR   = ['—', '-19.1%', '+13.6%', '+5.7%', '-8.0%', '-6.0%', '-1.6%', '+1.9%', '-10.8%', '+14.0%', '-4.3%', '+18.6%', '+0.3%', '-29.1%', '+13.2%', '-7.3%'];
+const PCT   = ['7.3%', '5.9%', '6.7%', '7.1%', '6.5%', '6.1%', '6.0%', '6.2%', '5.5%', '6.3%', '6.0%', '7.1%', '7.1%', '5.1%', '5.7%', '5.3%'];
+const RN    = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+const RS    = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+const RA    = [13, 13, 13, 13, 13, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12];
+const PIDX  = 0;
+const MIDX  = 13;
+const UNIT  = 'M';
+const DIV   = 1000000;
+const APR25_NITS = 13;
+const APR26_NITS = 12;
+const APR25_TX_V = 5.84;
+const APR26_TX_V = 4.36;
+const Y2MIN = 10;
+const Y2MAX = 17;
+
+/* ── NAVIGATION ── */
+let chartsBuilt = false;
+
+function goPage(idx) {
+  for (let i = 0; i < 4; i++) {
+    const pg = document.getElementById('page' + i);
+    const tb = document.getElementById('tab' + i);
+    if (i === idx) {
+      pg.classList.add('active');
+      tb.classList.add('active');
+      tb.setAttribute('aria-selected', 'true');
+    } else {
+      pg.classList.remove('active');
+      tb.classList.remove('active');
+      tb.setAttribute('aria-selected', 'false');
+    }
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (!chartsBuilt) buildCharts();
+}
+
+/* ── BUILD MONTHLY TABLE ── */
+(function() {
+  const tb = document.getElementById('mtbody');
+  MONTHS.forEach(function(m, i) {
+    const tr = document.createElement('tr');
+    const vc = VAR[i].startsWith('+') ? 'vp' : VAR[i].startsWith('-') ? 'vn' : '';
+    tr.innerHTML =
+      '<td>' + m + '</td>' +
+      '<td>' + NITS[i] + '</td>' +
+      '<td>' + Number(TX[i]).toLocaleString('es-CO') + '</td>' +
+      '<td class="' + vc + '">' + VAR[i] + '</td>' +
+      '<td>' + PCT[i] + '</td>';
+    tb.appendChild(tr);
+  });
+})();
+
+/* ── BUILD CHARTS ── */
+function buildCharts() {
+  chartsBuilt = true;
+
+  /* Bar chart */
+  new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [{
+        data: TX.map(function(v) { return +(v / DIV).toFixed(2); }),
+        backgroundColor: TX.map(function(_, i) {
+          if (i === PIDX) return '#5ACF3D';
+          if (i === MIDX) return '#14AAEE';
+          return '#0D3075';
+        }),
+        borderRadius: 5,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0D3075',
+          titleFont: { family: 'Poppins' },
+          bodyFont: { family: 'Poppins' },
+          callbacks: { label: function(ctx) { return ctx.parsed.y.toFixed(2) + UNIT + ' TX'; } }
+        }
+      },
+      scales: {
+        x: { ticks: { font: { family: 'Poppins', size: 9 }, maxRotation: 45, autoSkip: false }, grid: { display: false } },
+        y: { ticks: { font: { family: 'Poppins', size: 10 }, callback: function(v) { return v + UNIT; } }, grid: { color: 'rgba(0,0,0,.05)' }, beginAtZero: true }
+      }
+    }
+  });
+
+  /* Comparison chart — Organizaciones Activas */
+  new Chart(document.getElementById('compChartNits'), {
+    type: 'bar',
+    data: {
+      labels: ['Abril 2025', 'Abril 2026'],
+      datasets: [{
+        data: [APR25_NITS, APR26_NITS],
+        backgroundColor: ['#14AAEE', '#0D3075'],
+        borderRadius: 8,
+        barThickness: 60,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0D3075',
+          callbacks: { label: function(ctx) { return ctx.parsed.y + ' NITs'; } }
+        },
+        datalabels: { display: false }
+      },
+      scales: {
+        x: { ticks: { font: { family: 'Poppins', size: 11 }, color: '#0D3075' }, grid: { display: false } },
+        y: {
+          ticks: { font: { family: 'Poppins', size: 10 }, stepSize: 1, callback: function(v) { return v + ' NITs'; } },
+          grid: { color: 'rgba(0,0,0,.05)' },
+          beginAtZero: true,
+          suggestedMax: Math.max(APR25_NITS, APR26_NITS) * 1.3
+        }
+      }
+    }
+  });
+
+  /* Comparison chart — Transacciones */
+  new Chart(document.getElementById('compChartTx'), {
+    type: 'bar',
+    data: {
+      labels: ['Abril 2025', 'Abril 2026'],
+      datasets: [{
+        data: [APR25_TX_V, APR26_TX_V],
+        backgroundColor: ['#14AAEE', '#0D3075'],
+        borderRadius: 8,
+        barThickness: 60,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0D3075',
+          callbacks: { label: function(ctx) { return ctx.parsed.y.toFixed(2) + UNIT + ' TX'; } }
+        }
+      },
+      scales: {
+        x: { ticks: { font: { family: 'Poppins', size: 11 }, color: '#0D3075' }, grid: { display: false } },
+        y: {
+          ticks: { font: { family: 'Poppins', size: 10 }, callback: function(v) { return v.toFixed(1) + UNIT; } },
+          grid: { color: 'rgba(0,0,0,.05)' },
+          beginAtZero: true,
+          suggestedMax: Math.max(APR25_TX_V, APR26_TX_V) * 1.3
+        }
+      }
+    }
+  });
+
+  /* Retention chart */
+  new Chart(document.getElementById('retChart'), {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { type: 'bar',  label: 'Nuevos',    data: RN, backgroundColor: '#14AAEE', borderRadius: 4 },
+        { type: 'bar',  label: 'Salientes', data: RS, backgroundColor: '#E53F39', borderRadius: 4 },
+        { type: 'line', label: 'Activos',   data: RA,
+           borderColor: '#5ACF3D', backgroundColor: 'rgba(90,207,61,.07)',
+           pointBackgroundColor: '#5ACF3D', pointRadius: 5, pointHoverRadius: 7,
+           fill: true, yAxisID: 'y2', tension: 0.35 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { mode: 'index', backgroundColor: '#0D3075' }
+      },
+      scales: {
+        x:  { ticks: { font: { family: 'Poppins', size: 9 }, maxRotation: 45, autoSkip: false }, grid: { display: false } },
+        y:  { ticks: { font: { family: 'Poppins', size: 10 } }, grid: { color: 'rgba(0,0,0,.05)' }, beginAtZero: true },
+        y2: { position: 'right', ticks: { font: { family: 'Poppins', size: 10 } }, grid: { display: false }, min: Y2MIN, max: Y2MAX }
+      }
+    }
+  });
+}
+
+/* Build charts immediately so page2 is ready when navigated to */
+setTimeout(buildCharts, 200);
+</script>
+</body>
+</html>
